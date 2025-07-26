@@ -1,7 +1,8 @@
 import numpy as np
 import pickle
 import streamlit as st
-import io
+from fpdf import FPDF
+import tempfile
 
 # Load the trained model
 try:
@@ -10,73 +11,80 @@ except FileNotFoundError:
     st.error("Model file not found. Please upload 'trained_model.sav' in the app directory.")
     st.stop()
 
-# Prediction function
+# Function to make prediction
 def diabetes_prediction(input_data):
     input_array = np.asarray(input_data, dtype=float).reshape(1, -1)
     prediction = loaded_model.predict(input_array)
     return '🟢 The person is **not diabetic**.' if prediction[0] == 0 else '🔴 The person **is diabetic**.'
 
+# Function to create PDF result
+def generate_pdf(data_dict, result_text):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=14)
+    pdf.cell(200, 10, txt="🩺 Diabetes Prediction Result", ln=True, align='C')
+    pdf.ln(10)
+    for key, value in data_dict.items():
+        pdf.cell(200, 10, txt=f"{key}: {value}", ln=True)
+    pdf.ln(10)
+    pdf.set_font("Arial", style="B", size=14)
+    pdf.cell(200, 10, txt=f"Result: {result_text}", ln=True)
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf")
+    pdf.output(temp_file.name)
+    return temp_file.name
+
 # Main UI
 def main():
-    st.set_page_config(page_title="Diabetes Predictor", layout="wide", page_icon="💉")
-    st.title('💉 Diabetes Prediction Web App')
-    st.markdown("#### Predict whether a person is diabetic based on medical inputs.")
+    st.set_page_config(page_title="Diabetes Predictor", layout="centered", page_icon="💉")
 
+    st.markdown("<h1 style='text-align: center;'>💉 Diabetes Prediction App</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Enter patient details below to check for diabetes.</p>", unsafe_allow_html=True)
     st.markdown("---")
 
-    with st.sidebar:
-        st.header("📋 User Input Features")
-        st.info("Enter the following values:")
+    labels = [
+        '🤰 Number of Pregnancies', '🍬 Glucose Level', '💓 Blood Pressure',
+        '🧬 Skin Thickness', '💉 Insulin Level', '⚖️ BMI',
+        '🧪 Diabetes Pedigree Function', '🎂 Age'
+    ]
 
-        pregnancies = st.text_input('🤰 Number of Pregnancies', '0')
-        glucose = st.text_input('🍬 Glucose Level', '100')
-        bloodPressure = st.text_input('💓 Blood Pressure (mm Hg)', '70')
-        skinThickness = st.text_input('🧬 Skin Thickness (mm)', '20')
-        insulin = st.text_input('💉 Insulin Level', '80')
-        bmi = st.text_input('⚖️ BMI Value', '25.0')
-        dpf = st.text_input('🧪 Diabetes Pedigree Function', '0.5')
-        age = st.text_input('🎂 Age', '33')
+    # Center inputs in the page using columns
+    col_spacer_left, col_main, col_spacer_right = st.columns([1, 2, 1])
+    with col_main:
+        inputs = []
+        for label in labels:
+            inputs.append(st.text_input(label))
 
-    # Validate numeric inputs
-    inputs = [pregnancies, glucose, bloodPressure, skinThickness, insulin, bmi, dpf, age]
-    try:
-        numeric_inputs = [float(i) for i in inputs]
-    except ValueError:
-        st.warning("⚠️ Please make sure all fields are filled with valid **numbers**.")
-        return
-
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
         if st.button("🚀 Predict Diabetes Status"):
-            result = diabetes_prediction(numeric_inputs)
-            st.success(result)
-            st.balloons()
+            try:
+                numeric_inputs = [float(i) for i in inputs]
+                result = diabetes_prediction(numeric_inputs)
+                st.success(result)
+                st.balloons()
 
-            # Download button for result
-            result_text = f"""
-📋 Diabetes Prediction Result
------------------------------
-Pregnancies: {pregnancies}
-Glucose: {glucose}
-Blood Pressure: {bloodPressure}
-Skin Thickness: {skinThickness}
-Insulin: {insulin}
-BMI: {bmi}
-Diabetes Pedigree Function: {dpf}
-Age: {age}
+                # Prepare data for PDF
+                clean_labels = [
+                    'Pregnancies', 'Glucose', 'Blood Pressure',
+                    'Skin Thickness', 'Insulin', 'BMI', 'DPF', 'Age'
+                ]
+                data_dict = dict(zip(clean_labels, inputs))
+                pdf_path = generate_pdf(data_dict, result)
 
-Result: {result}
-            """.strip()
-
-            st.download_button(
-                label="📄 Download Your Result",
-                data=result_text,
-                file_name="diabetes_result.txt",
-                mime="text/plain"
-            )
+                with open(pdf_path, "rb") as f:
+                    st.download_button(
+                        label="📄 Download Result as PDF",
+                        data=f,
+                        file_name="diabetes_result.pdf",
+                        mime="application/pdf"
+                    )
+            except ValueError:
+                st.error("⚠️ Please ensure all fields are filled with **valid numbers**.")
 
     st.markdown("---")
-    st.markdown("✅ Developed with Streamlit | [GitHub Repo](https://github.com/pksanjai/Diabetes-prediction-app)")
+    st.markdown(
+        "<div style='text-align:center;'>✅ Made with ❤️ using Streamlit | "
+        "<a href='https://github.com/pksanjai/Diabetes-prediction-app' target='_blank'>GitHub Repo</a></div>",
+        unsafe_allow_html=True
+    )
 
 if __name__ == '__main__':
     main()
