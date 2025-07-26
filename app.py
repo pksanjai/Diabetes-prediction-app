@@ -81,26 +81,39 @@ def main():
         inputs[key] = st.text_input(label)
 
     # Prediction
-    if st.button("🚀 Run Prediction"):
-        try:
-            input_values = [float(v) for v in inputs.values()]
-            prediction = predict_diabetes(input_values)
+if st.button("🚀 Run Prediction"):
+    try:
+        input_values = []
+        data_dict = {}
 
-            st.success(f"✅ Prediction: **{prediction}**")
-            if "Not" in prediction:
-                st.balloons()
-            else:
-                st.snow()
+        # Sanitize and validate inputs
+        for (label, key) in input_labels:
+            val = inputs[key].strip()
+            if val == "":
+                raise ValueError("Empty input")
+            float_val = float(val)
+            input_values.append(float_val)
+            data_dict[label] = val
 
-            # PDF generation
-            data_dict = {label: inputs[key] for (label, key) in input_labels}
-            pdf_file = create_pdf(data_dict, prediction)
+        # Run prediction
+        prediction = predict_diabetes(input_values)
+        st.success(f"✅ Prediction: **{prediction}**")
 
-            with open(pdf_file, "rb") as f:
-                st.download_button("📄 Download Report (PDF)", f, file_name="diabetes_report.pdf", mime="application/pdf")
+        # Celebration animation
+        st.balloons() if "Not" in prediction else st.snow()
 
-        except ValueError:
-            st.warning("⚠️ Please fill all fields with valid numbers.")
+        # Create and show PDF download button
+        pdf_file = create_pdf(data_dict, prediction)
+        with open(pdf_file, "rb") as f:
+            st.download_button(
+                label="📄 Download Report (PDF)",
+                data=f,
+                file_name="diabetes_report.pdf",
+                mime="application/pdf"
+            )
+
+    except ValueError:
+        st.warning("⚠️ Please fill all fields with valid numbers.")
 
     st.markdown("---")
     st.markdown(
