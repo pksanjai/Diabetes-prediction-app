@@ -63,6 +63,8 @@ def main():
     for label, key in input_labels:
         inputs[key] = st.text_input(label)
 
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
     if st.button("🚀 Run Prediction"):
         try:
             input_values = []
