@@ -44,7 +44,7 @@ def main():
     st.markdown("<p style='text-align:center;'>Know your health risk using Machine Learning!</p>", unsafe_allow_html=True)
     st.divider()
 
-    st.image("https://cdn.pixabay.com/photo/2017/08/06/11/45/blood-2595152_960_720.jpg", use_column_width=True, caption="Early detection can save lives!")
+    st.image("https://retinalscreenings.com/wp-content/uploads/2021/11/diabetes-awarenss-month-scaled.jpg", use_column_width=True, caption="Early detection can save lives!")
 
     st.markdown("### 🔢 Enter Patient Details")
 
