@@ -65,48 +65,48 @@ def main():
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-    if st.button("🚀 Run Prediction"):
-        try:
-            input_values = []
-            data_dict = {}
+        if st.button("🚀 Run Prediction"):
+            try:
+                input_values = []
+                data_dict = {}
 
-            # Validate all fields
-            for (label, key) in input_labels:
-                val = inputs[key].strip()
-                if val == "":
-                    raise ValueError("Empty input")
-                float_val = float(val)
-                input_values.append(float_val)
-                data_dict[label] = val
-
-            # Predict
-            prediction = predict_diabetes(input_values)
-            st.success(f"✅ Prediction: **{prediction}**")
-
-            if "Not" in prediction:
-                st.balloons()
-            else:
-                st.snow()
+                # Validate all fields
+                for (label, key) in input_labels:
+                    val = inputs[key].strip()
+                    if val == "":
+                        raise ValueError("Empty input")
+                    float_val = float(val)
+                    input_values.append(float_val)
+                    data_dict[label] = val
+    
+                # Predict
+                prediction = predict_diabetes(input_values)
+                st.success(f"✅ Prediction: **{prediction}**")
+    
+                if "Not" in prediction:
+                    st.balloons()
+                else:
+                    st.snow()
 
             # PDF download
-            pdf_file = create_pdf(data_dict, prediction)
-            with open(pdf_file, "rb") as f:
-                st.download_button(
-                    label="📄 Download Report (PDF)",
-                    data=f,
-                    file_name="diabetes_report.pdf",
-                    mime="application/pdf"
-                )
+                pdf_file = create_pdf(data_dict, prediction)
+                with open(pdf_file, "rb") as f:
+                    st.download_button(
+                        label="📄 Download Report (PDF)",
+                        data=f,
+                        file_name="diabetes_report.pdf",
+                        mime="application/pdf"
+                    )
 
-        except ValueError:
-            st.warning("⚠️ Please fill all fields with valid numbers.")
+            except ValueError:
+                st.warning("⚠️ Please fill all fields with valid numbers.")
 
-    st.markdown("---")
-    st.markdown(
-        "<div style='text-align:center;'>Built with ❤️ using Streamlit | "
-        "<a href='https://github.com/pksanjai/Diabetes-prediction-app' target='_blank'>GitHub Repo</a></div>",
-        unsafe_allow_html=True
-    )
+        st.markdown("---")
+        st.markdown(
+            "<div style='text-align:center;'>Built with ❤️ using Streamlit | "
+            "<a href='https://github.com/pksanjai/Diabetes-prediction-app' target='_blank'>GitHub Repo</a></div>",
+            unsafe_allow_html=True
+        )
 
 if __name__ == '__main__':
     main()
