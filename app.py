@@ -4,20 +4,20 @@ import streamlit as st
 from fpdf import FPDF
 import tempfile
 
-# Load trained model
+# Load model
 try:
     model = pickle.load(open('trained_model.sav', 'rb'))
 except FileNotFoundError:
     st.error("❌ Model file not found. Please upload 'trained_model.sav' in the same folder.")
     st.stop()
 
-# Prediction function
+# Predict function
 def predict_diabetes(data):
     array = np.array(data, dtype=float).reshape(1, -1)
     result = model.predict(array)[0]
     return '🟢 Not Diabetic' if result == 0 else '🔴 Diabetic'
 
-# Generate PDF report
+# Generate PDF
 def create_pdf(details, prediction):
     pdf = FPDF()
     pdf.add_page()
@@ -36,7 +36,7 @@ def create_pdf(details, prediction):
     pdf.output(tmp.name)
     return tmp.name
 
-# Main Streamlit App
+# Streamlit app
 def main():
     st.set_page_config("Diabetes Predictor", page_icon="💉", layout="centered")
 
@@ -44,7 +44,8 @@ def main():
     st.markdown("<p style='text-align:center;'>Know your health risk using Machine Learning!</p>", unsafe_allow_html=True)
     st.divider()
 
-    st.image("https://retinalscreenings.com/wp-content/uploads/2021/11/diabetes-awarenss-month-scaled.jpg", use_container_width=True, caption="Early detection can save lives!")
+    st.image("https://retinalscreenings.com/wp-content/uploads/2021/11/diabetes-awarenss-month-scaled.jpg",
+             use_container_width=True, caption="Early detection can save lives!")
 
     st.markdown("### 🔢 Enter Patient Details")
 
@@ -59,21 +60,20 @@ def main():
         ("🎂 Age", "age"),
     ]
 
+    # Centered columns for form layout
+    left, center, right = st.columns([1, 2, 1])
     inputs = {}
-    for label, key in input_labels:
-        inputs[key] = st.text_input(label)
+    with center:
+        for label, key in input_labels:
+            inputs[key] = st.text_input(label)
 
-    st.markdown("###")
+        st.markdown("")
 
-    # Centered Button
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
         if st.button("🚀 Run Prediction"):
             try:
                 input_values = []
                 data_dict = {}
 
-                # Validate and collect inputs
                 for (label, key) in input_labels:
                     val = inputs[key].strip()
                     if val == "":
@@ -82,17 +82,14 @@ def main():
                     input_values.append(float_val)
                     data_dict[label] = val
 
-                # Predict
                 prediction = predict_diabetes(input_values)
                 st.success(f"✅ Prediction: **{prediction}**")
 
-                # Animation
                 if "Not" in prediction:
                     st.balloons()
                 else:
                     st.snow()
 
-                # PDF report
                 pdf_file = create_pdf(data_dict, prediction)
                 with open(pdf_file, "rb") as f:
                     st.download_button(
