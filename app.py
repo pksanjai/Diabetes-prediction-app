@@ -44,7 +44,7 @@ def main():
     st.markdown("<p style='text-align:center;'>Know your health risk using Machine Learning!</p>", unsafe_allow_html=True)
     st.divider()
 
-    st.image("https://retinalscreenings.com/wp-content/uploads/2021/11/diabetes-awarenss-month-scaled.jpg",  use_container_width=True, caption="Early detection can save lives!")
+    st.image("https://retinalscreenings.com/wp-content/uploads/2021/11/diabetes-awarenss-month-scaled.jpg", use_container_width=True, caption="Early detection can save lives!")
 
     st.markdown("### 🔢 Enter Patient Details")
 
@@ -63,6 +63,9 @@ def main():
     for label, key in input_labels:
         inputs[key] = st.text_input(label)
 
+    st.markdown("###")
+
+    # Centered Button
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🚀 Run Prediction"):
@@ -70,7 +73,7 @@ def main():
                 input_values = []
                 data_dict = {}
 
-                # Validate all fields
+                # Validate and collect inputs
                 for (label, key) in input_labels:
                     val = inputs[key].strip()
                     if val == "":
@@ -78,17 +81,18 @@ def main():
                     float_val = float(val)
                     input_values.append(float_val)
                     data_dict[label] = val
-    
+
                 # Predict
                 prediction = predict_diabetes(input_values)
                 st.success(f"✅ Prediction: **{prediction}**")
-    
+
+                # Animation
                 if "Not" in prediction:
                     st.balloons()
                 else:
                     st.snow()
 
-            # PDF download
+                # PDF report
                 pdf_file = create_pdf(data_dict, prediction)
                 with open(pdf_file, "rb") as f:
                     st.download_button(
@@ -101,12 +105,12 @@ def main():
             except ValueError:
                 st.warning("⚠️ Please fill all fields with valid numbers.")
 
-        st.markdown("---")
-        st.markdown(
-            "<div style='text-align:center;'>Built with ❤️ using Streamlit | "
-            "<a href='https://github.com/pksanjai/Diabetes-prediction-app' target='_blank'>GitHub Repo</a></div>",
-            unsafe_allow_html=True
-        )
+    st.markdown("---")
+    st.markdown(
+        "<div style='text-align:center;'>Built with ❤️ using Streamlit | "
+        "<a href='https://github.com/pksanjai/Diabetes-prediction-app' target='_blank'>GitHub Repo</a></div>",
+        unsafe_allow_html=True
+    )
 
 if __name__ == '__main__':
     main()
